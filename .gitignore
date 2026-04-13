@@ -1,0 +1,50 @@
+# === Eclipse Build Output ===
+bin/
+build/
+target/
+out/
+
+# === Eclipse Metadata ===
+.classpath
+.project
+.settings/
+
+# === Java ===
+*.class
+*.log
+*.tmp
+*.swp
+*.swo
+
+# === OS-specific ===
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+._*
+
+# === Git ===
+*.orig
+
+# === Bukkit / Minecraft Plugin Specific ===
+# Ignore temporary build artifacts or generated plugin test files
+/plugins/
+# But allow your plugin jar if you export it manually
+!*.jar
+
+# Ignore world copies if you store any testing worlds
+world/
+world_nether/
+world_the_end/
+
+# Ignore server cache
+logs/
+cache/
+crash-reports/
+
+# === IntelliJ (if you ever use it) ===
+.idea/
+*.iml
