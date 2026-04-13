@@ -150,7 +150,7 @@ implements CommandExecutor {
                 next = this.nextIslandLocation(last);
                 this.plugin.setLastIsland(next);
             }
-            this.generateIslandBlocks(0, 0, player);
+            this.copyIslandWorld(0, 0, player, true);
             this.plugin.registerPlayerIsland(player, next);
             
         }
@@ -163,346 +163,369 @@ implements CommandExecutor {
         return true;
     }
 
-    public void generateIslandBlocks(int x, int z, final Player player) {
+    public World createIslandWorld() {
 
-    	File file = new File(System.getProperty("user.dir"),"/schematics/island2.schematic");
+//    	World world = Bukkit.getServer().createWorld(null, Environment.NORMAL, null)
+    	ChunkGenerator generator = new CleanroomChunkGenerator(".");
+    	World world = Bukkit.getServer().createWorld(plugin.getDataFolder()+ "/map", Environment.NORMAL, generator);
+    	
+    	mv.getWorldManager().addWorld(plugin.getDataFolder()+ "/map", Environment.NORMAL, null , "CleanroomGenerator:.");
+
+    	World mvWorld = mv.getWorldManager().getMVWorld(plugin.getDataFolder()+ "/map").getCBWorld();
+    	
+    	return mvWorld;
+    	
+    }
+    
+    public void copyIslandWorld(final int x, final int z, final Player player,final boolean firstRun) {
+    	
+    	if (!firstRun) {
+    		unloadTempWorld(player);
+    	}
 
 		File sourceFolder = new File(plugin.getDataFolder(), "map");
         File targetFolder = new File(System.getProperty("user.dir")+"/skyblock/"+player.getName());
-    	int run1 = 0;
-    	
-    	try {
-    		if (hasAnyFiles(sourceFolder)) {
-	    		copyWorld(sourceFolder, targetFolder);
 	
-	        	mv.getWorldManager().addWorld("skyblock/"+player.getName(), Environment.NORMAL, null , "CleanroomGenerator:.");
-    		} else {
-    			run1 = 1;
-    		}
-		} catch (IOException e1) {
-			org.bukkit.Bukkit.getServer().getLogger().severe("failed to copy the world");
-			run1 = 1;
-			e1.printStackTrace();
+		if (hasAnyFiles(sourceFolder)) {
+
+	    	Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+	    	    private final skyblock plugin1 = new skyblock();
+
+				@Override
+	    	    public void run() {
+
+	            	MultiverseCore mv = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");	
+
+	            	MVWorld mvWorld = mv.getWorldManager().getMVWorld(plugin.getDataFolder()+ "/map");
+	            	
+	            	
+	    	    	File targetFolder1 = new File(System.getProperty("user.dir")+"/skyblock/"+player.getName());
+//	    			File folder = plugin.getDataFolder();
+	    			File sourceFolder1 = new File(plugin.getDataFolder(), "map");
+	    	        
+	    	    	try {
+	    				copyWorld(sourceFolder1, targetFolder1);
+
+	    	        	mv.getWorldManager().addWorld("skyblock/"+player.getName(), Environment.NORMAL, null , "CleanroomGenerator:.");
+	    	        	
+	    			} catch (IOException e1) {
+	    				org.bukkit.Bukkit.getServer().getLogger().severe("failed to copy the world");
+	    				if (firstRun) {
+	    					createIslandUsingSchematic(x, z, player);
+	    				}
+	    				e1.printStackTrace();
+	    			}
+	    	    	
+	                this.plugin1.teleportHome(player);
+	    	    }
+	    	}, 1L);
+		} else {
+			org.bukkit.Bukkit.getServer().getLogger().severe("no world were found");
+			createIslandUsingSchematic(x, z, player);
 		}
-    	if (run1 == 1) {
+    }
+    
+    public void unloadTempWorld(Player playerName) {
+	
+    	MultiverseCore mv = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");	
 
-        	File dir = new File(plugin.getDataFolder(), "map");
-        	dir.mkdirs();
-//        	World world = Bukkit.getServer().createWorld(null, Environment.NORMAL, null)
-        	ChunkGenerator generator = new CleanroomChunkGenerator(".");
-        	World world = Bukkit.getServer().createWorld(plugin.getDataFolder()+ "/map", Environment.NORMAL, generator);
-        	
-        	mv.getWorldManager().addWorld(plugin.getDataFolder()+ "/map", Environment.NORMAL, null , "CleanroomGenerator:.");
+    	String maploc = plugin.getDataFolder()+ "/map";
+    	
+    	
+        Bukkit.getServer().getWorld("world").loadChunk(-13, 44);
+        World world = Bukkit.getServer().getWorld(maploc);
+        
+        if (world != null) {
+        	for (Player p : world.getPlayers()) {
+        		Location spawn = world.getSpawnLocation();
+        		double x = spawn.getX();
+        		double y = spawn.getY();
+        		double z = spawn.getZ();
+        		float yaw = spawn.getYaw();
+        		float pitch = spawn.getPitch();
+                p.teleport(new Location(Bukkit.getServer().getWorld("world"), x, y, z, yaw, pitch));
+        		
+        	}
+        }
+        
 
-        	World mvWorld = mv.getWorldManager().getMVWorld(plugin.getDataFolder()+ "/map").getCBWorld();
-	        Block blockToChange;
-	        int z_operate;
-	        int y_operate;
-	        int y = this.plugin.getISLANDS_Y();
-	        int x_operate = x;
-	    	
-	        int wd = 0;
-	
-	        
-	    	try {
-				CuboidClipboard clipboard = CuboidClipboard.loadSchematic(file);
-				WorldEditPlugin we = (WorldEditPlugin) org.bukkit.Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
-				EditSession editSession = new EditSession(new BukkitWorld(mvWorld), Integer.MAX_VALUE);
-	
-	            
-		        int minChunkX = x >> 4;
-		        int minChunkZ = z >> 4;
-	
-		        int maxChunkX = (x+clipboard.getWidth() -1 ) >> 4;
-		        
-		        int maxChunkZ = (z+clipboard.getLength() -1 ) >> 4;
-		        
-		        for (int cx = minChunkX;cx <= maxChunkX; cx++) {
-		        	for(int cz = minChunkZ; cz <= maxChunkZ; cz++) {
-		        		if(!Bukkit.getServer().getWorld(plugin.getDataFolder()+ "/map").isChunkLoaded(cx, cz)) {
-		        	        Bukkit.getServer().getWorld(plugin.getDataFolder()+ "/map").loadChunk(cx, cz);
-		        	        org.bukkit.Bukkit.getServer().getLogger().severe("loading chunks" +cx + " " + cz);
-		        		}else {
-		        			org.bukkit.Bukkit.getServer().getLogger().severe("loaded chunks" +cx + " " + cz);
-		        		}
-		        	}
-		        }
-				clipboard.paste(editSession, new Vector(x,y,z), false);
-				
-			} catch (DataException e) {
+        mv.removeWorldFromConfig(maploc);
+        mv.removeWorldFromList(maploc);
+        
+        for (org.bukkit.Chunk chunk : world.getLoadedChunks()) {
+        	chunk.unload(false, false);
+        }
+        
+        Bukkit.getServer().unloadWorld(Bukkit.getServer().getWorld(maploc), false);
+        
+        if(Bukkit.getServer().getWorld(maploc) != null) {
+        	System.out.println("failed to unload the world");
+        }
+        
+    }
+    
+    public final void createIslandUsingSchematic(final int x,final int z, final Player player) {
+    	
+    	final File file = new File(System.getProperty("user.dir"),"/schematics/island2.schematic");
+    	File dir = new File(plugin.getDataFolder(), "map");
+    	dir.mkdirs();
+    	final World mvWorld = createIslandWorld();
+
+        final int y = this.plugin.getISLANDS_Y();
+//        int wd = 0;
+
+    
+		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+
+			@Override
+    	    public void run() {
+				try {
+					CuboidClipboard clipboard = CuboidClipboard.loadSchematic(file);
+//					WorldEditPlugin we = (WorldEditPlugin) org.bukkit.Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
+					EditSession editSession = new EditSession(new BukkitWorld(mvWorld), Integer.MAX_VALUE);
+
+
+			        int minChunkX = x >> 4;
+			        int minChunkZ = z >> 4;
+
+			        int maxChunkX = (x+clipboard.getWidth() -1 ) >> 4;
+			        
+			        int maxChunkZ = (z+clipboard.getLength() -1 ) >> 4;
+			        
+			        for (int cx = minChunkX;cx <= maxChunkX; cx++) {
+			        	for(int cz = minChunkZ; cz <= maxChunkZ; cz++) {
+			        		if(!Bukkit.getServer().getWorld(plugin.getDataFolder()+ "/map").isChunkLoaded(cx, cz)) {
+			        	        Bukkit.getServer().getWorld(plugin.getDataFolder()+ "/map").loadChunk(cx, cz);
+			        	        org.bukkit.Bukkit.getServer().getLogger().severe("loading chunks" +cx + " " + cz);
+			        		}else {
+			        			org.bukkit.Bukkit.getServer().getLogger().severe("loaded chunks" +cx + " " + cz);
+			        		}
+			        	}
+			        }
+					
+					clipboard.paste(editSession, new Vector(x,y,z), false);
+					copyIslandWorld(x, z, player, false);
+			}catch (DataException e) {
 				// TODO Auto-generated catch block
 				org.bukkit.Bukkit.getServer().getLogger().severe("file doesn't exsits");
-				wd = 1;
+				
+				createClassicIsland(x, y, z, player,mvWorld);
 				e.printStackTrace();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				org.bukkit.Bukkit.getServer().getLogger().severe("error loading the file.");
-				wd = 1;
+				createClassicIsland(x, y, z, player,mvWorld);
 				e.printStackTrace();
 			} 
 	    	catch (MaxChangedBlocksException e) {
 				// TODO Auto-generated catch block
-				org.bukkit.Bukkit.getServer().getLogger().severe("server cancelled the paste to stop the server from crashing");
+				org.bukkit.Bukkit.getServer().getLogger().severe("server cancelled the schematic paste to stop the server from crashing");
 				e.printStackTrace();
 			}
-	    	
-	    	if (wd==1) {
-		        while (x_operate < x + 3) {
-		            y_operate = y;
-		            while (y_operate < y + 3) {
-		            	if (y_operate < y + 2) {
-			                z_operate = z + 0;
-			                while (z_operate < z + 6) {
-			                    blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
-			                    blockToChange.setTypeId(3);
-			                    ++z_operate;
-			                }
-		            	}
-		            	if (y_operate == y + 2) {
-			                z_operate = z + 0;
-			                while (z_operate < z + 6) {
-			                    blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
-			                    blockToChange.setTypeId(2);
-			                    ++z_operate;
-			                }
-			                
-		                }
-		                ++y_operate;
-		            }
-		            ++x_operate;
-		        }
-		        x_operate = x + 3;
-		        while (x_operate < x + 6) {
-		            y_operate = y;
-		            while (y_operate < y + 3) {
-		            	if (y_operate < y + 2) {
-			                z_operate = z + 3;
-			                while (z_operate < z + 6) {
-			                    blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
-			                    blockToChange.setTypeId(3);
-			                    ++z_operate;
-			                }
-		            	}
-		            	if (y_operate == y + 2) {
-			                z_operate = z + 3;
-			                while (z_operate < z + 6) {
-			                    blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
-			                    blockToChange.setTypeId(2);
-			                    ++z_operate;
-			                }
-			                
-		                }
-		                ++y_operate;
-		            }
-		            ++x_operate;
-		        }
-		        x_operate = x + 2;
-		        while (x_operate < x + 7) {
-		            y_operate = y + 6;
-		            z_operate = z + 2;
-		            while (z_operate < z + 7) {
-		                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
-		                blockToChange.setTypeId(18);
-		                ++z_operate;
-		            }
-		            ++x_operate;
-		        }
-		        x_operate = x + 2;
-		        while (x_operate < x + 7) {
-			        y_operate = y + 7;
-		            z_operate = z + 3;
-		            while (z_operate < z + 6) {
-		                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
-		                blockToChange.setTypeId(18);
-		                ++z_operate;
-			            }
-		            ++x_operate;
-		        }
-		        x_operate = x + 3;
-		        while (x_operate < x + 6) {
-			        y_operate = y + 7;
-		            z_operate = z + 2;
-		            while (z_operate < z + 7) {
-		                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
-		                blockToChange.setTypeId(18);
-		                ++z_operate;
-			            }
-		            ++x_operate;
-		        }
-		        x_operate = x + 4;
-		        while (x_operate < x + 5) {
-			        y_operate = y + 8;
-		            z_operate = z + 2;
-		            while (z_operate < z + 7) {
-		                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
-		                blockToChange.setTypeId(18);
-		                ++z_operate;
-			            }
-		            ++x_operate;
-		        }
-		        x_operate = x + 2;
-		        while (x_operate < x + 7) {
-			        y_operate = y + 8;
-		            z_operate = z + 4;
-		            while (z_operate < z + 5) {
-		                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
-		                blockToChange.setTypeId(18);
-		                ++z_operate;
-			            }
-		            ++x_operate;
-		        }
-		        x_operate = x + 3;
-		        while (x_operate < x + 6) {
-			        y_operate = y + 8;
-		            z_operate = z + 3;
-		            while (z_operate < z + 6) {
-		                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
-		                blockToChange.setTypeId(18);
-		                ++z_operate;
-			            }
-		            ++x_operate;
-		        }
-		        x_operate = x + 3;
-		        while (x_operate < x + 6) {
-			        y_operate = y + 9;
-		            z_operate = z + 4;
-		            while (z_operate < z + 5) {
-		                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
-		                blockToChange.setTypeId(18);
-		                ++z_operate;
-			            }
-		            ++x_operate;
-		        }
-		        x_operate = x + 4;
-		        while (x_operate < x + 5) {
-			        y_operate = y + 9;
-		            z_operate = z + 3;
-		            while (z_operate < z + 6) {
-		                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
-		                blockToChange.setTypeId(18);
-		                ++z_operate;
-			            }
-		            ++x_operate;
-		        }
-		        x_operate = x + 4;
-		        while (x_operate < x + 5) {
-			        y_operate = y + 10;
-		            z_operate = z + 4;
-		            while (z_operate < z + 5) {
-		                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
-		                blockToChange.setTypeId(18);
-		                ++z_operate;
-			            }
-		            ++x_operate;
-		        }
-		        int y_operate2 = y + 3;
-		        while (y_operate2 < y + 9) {
-		            Block blockToChange2 = mvWorld.getBlockAt(x + 4, y_operate2, z + 4);
-		            blockToChange2.setTypeId(17);
-		            ++y_operate2;
-		        }
-		        Block blockToChange3 = mvWorld.getBlockAt(x + 1, y + 3, z); //mvWorld.getBlockAt(x + 1, y + 3, z);
-		        blockToChange3.setTypeId(54);
-		        Chest chest = (Chest)blockToChange3.getState();
-		        Inventory inventory = chest.getInventory();
-		        ItemStack item = new ItemStack(287, 12);
-		        inventory.addItem(new ItemStack[]{item});
-		        item = new ItemStack(327, 1);
-		        inventory.addItem(new ItemStack[]{item});
-		        item = new ItemStack(352, 1);
-		        inventory.addItem(new ItemStack[]{item});
-		        item = new ItemStack(338, 1);
-		        inventory.addItem(new ItemStack[]{item});
-		        item = new ItemStack(40, 1);
-		        inventory.addItem(new ItemStack[]{item});
-		        item = new ItemStack(79, 2);
-		        inventory.addItem(new ItemStack[]{item});
-		        //item = new ItemStack(361, 1);
-		        //inventory.addItem(new ItemStack[]{item});
-		        item = new ItemStack(39, 1);
-		        //inventory.addItem(new ItemStack[]{item});
-		        //item = new ItemStack(360, 1);
-		        inventory.addItem(new ItemStack[]{item});
-		        item = new ItemStack(81, 1);
-		        inventory.addItem(new ItemStack[]{item});
-		        blockToChange3 = mvWorld.getBlockAt(x, y, z);
-		        blockToChange3.setTypeId(7);
-		        blockToChange3 = mvWorld.getBlockAt(x + 2, y + 1, z + 1);
-		        blockToChange3.setTypeId(12);
-		        blockToChange3 = mvWorld.getBlockAt(x + 2, y + 1, z + 2);
-		        blockToChange3.setTypeId(12);
-		        blockToChange3 = mvWorld.getBlockAt(x + 2, y + 1, z + 3);
-		        blockToChange3.setTypeId(12);
-	    	}
 
-
-	    	
-	    	if (run1 == 1 | wd == 1) {
-		    	Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-		    	    private final skyblock plugin1 = new skyblock();
-	
-					@Override
-		    	    public void run() {
-
-		            	MultiverseCore mv = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");	
-
-		            	MVWorld mvWorld = mv.getWorldManager().getMVWorld(plugin.getDataFolder()+ "/map");
-		            	
-		                Bukkit.getServer().getWorld("world").loadChunk(-13, 44);
-		                World world = Bukkit.getServer().getWorld(plugin.getDataFolder()+ "/map");
-		                
-		                if (world != null) {
-		                	for (Player p : world.getPlayers()) {
-		                		Location spawn = world.getSpawnLocation();
-		                		double x = spawn.getX();
-		                		double y = spawn.getY();
-		                		double z = spawn.getZ();
-		                		float yaw = spawn.getYaw();
-		                		float pitch = spawn.getPitch();
-		                        p.teleport(new Location(Bukkit.getServer().getWorld("world"), x, y, z, yaw, pitch));
-		                		
-		                	}
-		                }
-		            	
-
-		                mv.removeWorldFromConfig(plugin.getDataFolder()+ "/map");
-		                mv.removeWorldFromList(plugin.getDataFolder()+ "/map");
-		                
-		                for (org.bukkit.Chunk chunk : world.getLoadedChunks()) {
-		                	chunk.unload(false, false);
-		                }
-		                
-		                Bukkit.getServer().unloadWorld(Bukkit.getServer().getWorld(plugin.getDataFolder()+ "/map"), false);
-		                
-		                if(Bukkit.getServer().getWorld(plugin.getDataFolder()+ "/map") != null) {
-		                	System.out.println("failed to unload the world");
-		                }
-
-		    	    	File targetFolder1 = new File(System.getProperty("user.dir")+"/skyblock/"+player.getName());
-	//	    			File folder = plugin.getDataFolder();
-		    			File sourceFolder1 = new File(plugin.getDataFolder(), "map");
-		    	        
-		    	    	try {
-		    				copyWorld(sourceFolder1, targetFolder1);
-	
-		    	        	mv.getWorldManager().addWorld("skyblock/"+player.getName(), Environment.NORMAL, null , "CleanroomGenerator:.");
-		    	        	
-		    			} catch (IOException e1) {
-		    				org.bukkit.Bukkit.getServer().getLogger().severe("failed to copy the world");
-		    				e1.printStackTrace();
-		    			}
-		    	    	
-		                this.plugin1.teleportHome(player);
-		    	    }
-		    	}, 1L);
-	    	}
-	    	
-    	}
-    	if (run1 != 1) {
-        	this.plugin.teleportHome(player);
-    	}
+    	    	
+    	    }
+    	}, 1L);
+			
     }
+    
 
+    public final void createClassicIsland(int x, int y, int z, final Player player, World mvWorld) {
+
+        Block blockToChange;
+        int z_operate;
+        int y_operate;
+        int x_operate = x;
+        
+        while (x_operate < x + 3) {
+            y_operate = y;
+            while (y_operate < y + 3) {
+            	if (y_operate < y + 2) {
+	                z_operate = z + 0;
+	                while (z_operate < z + 6) {
+	                    blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
+	                    blockToChange.setTypeId(3);
+	                    ++z_operate;
+	                }
+            	}
+            	if (y_operate == y + 2) {
+	                z_operate = z + 0;
+	                while (z_operate < z + 6) {
+	                    blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
+	                    blockToChange.setTypeId(2);
+	                    ++z_operate;
+	                }
+	                
+                }
+                ++y_operate;
+            }
+            ++x_operate;
+        }
+        x_operate = x + 3;
+        while (x_operate < x + 6) {
+            y_operate = y;
+            while (y_operate < y + 3) {
+            	if (y_operate < y + 2) {
+	                z_operate = z + 3;
+	                while (z_operate < z + 6) {
+	                    blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
+	                    blockToChange.setTypeId(3);
+	                    ++z_operate;
+	                }
+            	}
+            	if (y_operate == y + 2) {
+	                z_operate = z + 3;
+	                while (z_operate < z + 6) {
+	                    blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
+	                    blockToChange.setTypeId(2);
+	                    ++z_operate;
+	                }
+	                
+                }
+                ++y_operate;
+            }
+            ++x_operate;
+        }
+        x_operate = x + 2;
+        while (x_operate < x + 7) {
+            y_operate = y + 6;
+            z_operate = z + 2;
+            while (z_operate < z + 7) {
+                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
+                blockToChange.setTypeId(18);
+                ++z_operate;
+            }
+            ++x_operate;
+        }
+        x_operate = x + 2;
+        while (x_operate < x + 7) {
+	        y_operate = y + 7;
+            z_operate = z + 3;
+            while (z_operate < z + 6) {
+                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
+                blockToChange.setTypeId(18);
+                ++z_operate;
+	            }
+            ++x_operate;
+        }
+        x_operate = x + 3;
+        while (x_operate < x + 6) {
+	        y_operate = y + 7;
+            z_operate = z + 2;
+            while (z_operate < z + 7) {
+                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
+                blockToChange.setTypeId(18);
+                ++z_operate;
+	            }
+            ++x_operate;
+        }
+        x_operate = x + 4;
+        while (x_operate < x + 5) {
+	        y_operate = y + 8;
+            z_operate = z + 2;
+            while (z_operate < z + 7) {
+                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
+                blockToChange.setTypeId(18);
+                ++z_operate;
+	            }
+            ++x_operate;
+        }
+        x_operate = x + 2;
+        while (x_operate < x + 7) {
+	        y_operate = y + 8;
+            z_operate = z + 4;
+            while (z_operate < z + 5) {
+                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
+                blockToChange.setTypeId(18);
+                ++z_operate;
+	            }
+            ++x_operate;
+        }
+        x_operate = x + 3;
+        while (x_operate < x + 6) {
+	        y_operate = y + 8;
+            z_operate = z + 3;
+            while (z_operate < z + 6) {
+                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
+                blockToChange.setTypeId(18);
+                ++z_operate;
+	            }
+            ++x_operate;
+        }
+        x_operate = x + 3;
+        while (x_operate < x + 6) {
+	        y_operate = y + 9;
+            z_operate = z + 4;
+            while (z_operate < z + 5) {
+                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
+                blockToChange.setTypeId(18);
+                ++z_operate;
+	            }
+            ++x_operate;
+        }
+        x_operate = x + 4;
+        while (x_operate < x + 5) {
+	        y_operate = y + 9;
+            z_operate = z + 3;
+            while (z_operate < z + 6) {
+                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
+                blockToChange.setTypeId(18);
+                ++z_operate;
+	            }
+            ++x_operate;
+        }
+        x_operate = x + 4;
+        while (x_operate < x + 5) {
+	        y_operate = y + 10;
+            z_operate = z + 4;
+            while (z_operate < z + 5) {
+                blockToChange = mvWorld.getBlockAt(x_operate, y_operate, z_operate);
+                blockToChange.setTypeId(18);
+                ++z_operate;
+	            }
+            ++x_operate;
+        }
+        int y_operate2 = y + 3;
+        while (y_operate2 < y + 9) {
+            Block blockToChange2 = mvWorld.getBlockAt(x + 4, y_operate2, z + 4);
+            blockToChange2.setTypeId(17);
+            ++y_operate2;
+        }
+        Block blockToChange3 = mvWorld.getBlockAt(x + 1, y + 3, z); //mvWorld.getBlockAt(x + 1, y + 3, z);
+        blockToChange3.setTypeId(54);
+        Chest chest = (Chest)blockToChange3.getState();
+        Inventory inventory = chest.getInventory();
+        ItemStack item = new ItemStack(287, 12);
+        inventory.addItem(new ItemStack[]{item});
+        item = new ItemStack(327, 1);
+        inventory.addItem(new ItemStack[]{item});
+        item = new ItemStack(352, 1);
+        inventory.addItem(new ItemStack[]{item});
+        item = new ItemStack(338, 1);
+        inventory.addItem(new ItemStack[]{item});
+        item = new ItemStack(40, 1);
+        inventory.addItem(new ItemStack[]{item});
+        item = new ItemStack(79, 2);
+        inventory.addItem(new ItemStack[]{item});
+        //item = new ItemStack(361, 1);
+        //inventory.addItem(new ItemStack[]{item});
+        item = new ItemStack(39, 1);
+        //inventory.addItem(new ItemStack[]{item});
+        //item = new ItemStack(360, 1);
+        inventory.addItem(new ItemStack[]{item});
+        item = new ItemStack(81, 1);
+        inventory.addItem(new ItemStack[]{item});
+        blockToChange3 = mvWorld.getBlockAt(x, y, z);
+        blockToChange3.setTypeId(7);
+        blockToChange3 = mvWorld.getBlockAt(x + 2, y + 1, z + 1);
+        blockToChange3.setTypeId(12);
+        blockToChange3 = mvWorld.getBlockAt(x + 2, y + 1, z + 2);
+        blockToChange3.setTypeId(12);
+        blockToChange3 = mvWorld.getBlockAt(x + 2, y + 1, z + 3);
+        blockToChange3.setTypeId(12);
+		copyIslandWorld(x, z, player, false);
+	
+    }
     
     private Island nextIslandLocation(Island lastIsland) {
         int x = lastIsland.x;
@@ -533,6 +556,7 @@ implements CommandExecutor {
         nextPos.z -= this.plugin.getISLAND_SPACING();
         return nextPos;
     }
+
 
 
     /**
