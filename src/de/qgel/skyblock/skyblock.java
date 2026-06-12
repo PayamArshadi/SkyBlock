@@ -1,5 +1,3 @@
-// Decompiled with: FernFlower
-// Class Version: 6
 package de.qgel.skyblock;
 
 import java.io.File;

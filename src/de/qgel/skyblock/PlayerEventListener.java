@@ -1,13 +1,3 @@
-/*
- * Decompiled with CFR 0.152.
- * 
- * Could not load the following classes:
- *  org.bukkit.Location
- *  org.bukkit.entity.Player
- *  org.bukkit.event.player.PlayerJoinEvent
- *  org.bukkit.event.player.PlayerListener
- *  org.bukkit.event.player.PlayerRespawnEvent
- */
 package de.qgel.skyblock;
 
 import org.bukkit.Location;
