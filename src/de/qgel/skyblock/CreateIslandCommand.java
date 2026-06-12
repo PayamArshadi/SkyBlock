@@ -17,13 +17,6 @@ package de.qgel.skyblock;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.onarandombox.MultiverseCore.MVWorld;
 import com.onarandombox.utils.WorldManager;
-import com.sk89q.worldedit.CuboidClipboard;
-import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.MaxChangedBlocksException;
-import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.bukkit.BukkitWorld;
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.data.DataException;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -37,6 +30,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
+import com.sk89q.worldedit.CuboidClipboard;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.MaxChangedBlocksException;
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.data.DataException;
 
 import net.minecraft.server.Chunk;
 import net.minecraft.server.MinecraftServer;
@@ -263,65 +262,69 @@ implements CommandExecutor {
         final int y = this.plugin.getISLANDS_Y();
 //        int wd = 0;
 
-    
-		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 
-			@Override
-    	    public void run() {
-				try {
-					CuboidClipboard clipboard = CuboidClipboard.loadSchematic(file);
-//					WorldEditPlugin we = (WorldEditPlugin) org.bukkit.Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
-					EditSession editSession = new EditSession(new BukkitWorld(mvWorld), Integer.MAX_VALUE);
-
-
-			        int minChunkX = x >> 4;
-			        int minChunkZ = z >> 4;
-
-			        int maxChunkX = (x+clipboard.getWidth() -1 ) >> 4;
-			        
-			        int maxChunkZ = (z+clipboard.getLength() -1 ) >> 4;
-			        
-			        for (int cx = minChunkX;cx <= maxChunkX; cx++) {
-			        	for(int cz = minChunkZ; cz <= maxChunkZ; cz++) {
-			        		if(!Bukkit.getServer().getWorld(plugin.getDataFolder()+ "/map").isChunkLoaded(cx, cz)) {
-			        	        Bukkit.getServer().getWorld(plugin.getDataFolder()+ "/map").loadChunk(cx, cz);
-			        	        org.bukkit.Bukkit.getServer().getLogger().severe("loading chunks" +cx + " " + cz);
-			        		}else {
-			        			org.bukkit.Bukkit.getServer().getLogger().severe("loaded chunks" +cx + " " + cz);
-			        		}
-			        	}
-			        }
+		if (org.bukkit.Bukkit.getServer().getPluginManager().getPlugin("WorldEdit")!=null) {
+			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+	
+				@Override
+	    	    public void run() {
+					try {
+							CuboidClipboard clipboard = CuboidClipboard.loadSchematic(file);
+							EditSession editSession = new EditSession(new BukkitWorld(mvWorld), Integer.MAX_VALUE);
+		
+		
+					        int minChunkX = x >> 4;
+					        int minChunkZ = z >> 4;
+		
+					        int maxChunkX = (x+clipboard.getWidth() -1 ) >> 4;
+					        
+					        int maxChunkZ = (z+clipboard.getLength() -1 ) >> 4;
+					        
+					        for (int cx = minChunkX;cx <= maxChunkX; cx++) {
+					        	for(int cz = minChunkZ; cz <= maxChunkZ; cz++) {
+					        		if(!Bukkit.getServer().getWorld(plugin.getDataFolder()+ "/map").isChunkLoaded(cx, cz)) {
+					        	        Bukkit.getServer().getWorld(plugin.getDataFolder()+ "/map").loadChunk(cx, cz);
+					        	        org.bukkit.Bukkit.getServer().getLogger().severe("loading chunks" +cx + " " + cz);
+					        		}else {
+					        			org.bukkit.Bukkit.getServer().getLogger().severe("loaded chunks" +cx + " " + cz);
+					        		}
+					        	}
+					        }
+							
+							clipboard.paste(editSession, new Vector(x,y,z), false);
+							copyIslandWorld(x, z, player, false);
+				}catch (DataException e) {
+					// TODO Auto-generated catch block
+					org.bukkit.Bukkit.getServer().getLogger().severe("file doesn't exsits");
 					
-					clipboard.paste(editSession, new Vector(x,y,z), false);
-					copyIslandWorld(x, z, player, false);
-			}catch (DataException e) {
-				// TODO Auto-generated catch block
-				org.bukkit.Bukkit.getServer().getLogger().severe("file doesn't exsits");
-				
-				createClassicIsland(x, y, z, player,mvWorld);
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				org.bukkit.Bukkit.getServer().getLogger().severe("error loading the file.");
-				createClassicIsland(x, y, z, player,mvWorld);
-				e.printStackTrace();
-			} 
-	    	catch (MaxChangedBlocksException e) {
-				// TODO Auto-generated catch block
-				org.bukkit.Bukkit.getServer().getLogger().severe("server cancelled the schematic paste to stop the server from crashing");
-				e.printStackTrace();
-			}
-
-    	    	
-    	    }
-    	}, 1L);
+					createClassicIsland(x, y, z, player,mvWorld);
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					org.bukkit.Bukkit.getServer().getLogger().severe("error loading the file.");
+					createClassicIsland(x, y, z, player,mvWorld);
+					e.printStackTrace();
+				} 
+		    	catch (MaxChangedBlocksException e) {
+					// TODO Auto-generated catch block
+					org.bukkit.Bukkit.getServer().getLogger().severe("server cancelled the schematic paste to stop the server from crashing");
+					e.printStackTrace();
+				}
+	
+	    	    	
+	    	    }
+	    	}, 1L);
+		}else {
+			createClassicIsland(x, y, z, player,mvWorld);
+			
+		}
 			
     }
     
 
     public final void createClassicIsland(int x, int y, int z, final Player player, World mvWorld) {
 
-        Block blockToChange;
+    	Block blockToChange;
         int z_operate;
         int y_operate;
         int x_operate = x;
