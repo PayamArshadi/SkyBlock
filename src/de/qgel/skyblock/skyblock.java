@@ -49,8 +49,12 @@ public class skyblock extends JavaPlugin {
         File folder = getDataFolder();
         folder.mkdirs(); // ensures /plugins/Skyblock exists
 
-        File maps = new File(folder, "map");
+        File maps = new File(folder, "maps");
         maps.mkdirs(); // creates /plugins/Skyblock/maps
+        
+        File schematics = new File(folder, "schematics");
+        schematics.mkdirs(); // creates /plugins/Skyblock/maps
+        
         PluginManager pm = this.getServer().getPluginManager();
         pm.registerEvent(Type.PLAYER_JOIN, this.playerListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_RESPAWN, this.playerListener, Priority.Normal, this);

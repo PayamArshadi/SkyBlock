@@ -1,3 +1,4 @@
 version 0.1.1 -> version 0.1 : transformed it to a skyblock plugin from a skySMP plugin and added full CB1060 support
 version 0.1 -> version 0.2 : added schematic file loading + caching the generated world + teleporting the player after the world is created + fixed CB1060 bug.
-version 0.2 -> version 0.3 : allow multiple worlds and loading custom schematics
+version 0.2 -> version 0.2.1 : better world caching system.
+version 0.2.1 -> version 0.2.2 : some fixes + partial MultiInv support.

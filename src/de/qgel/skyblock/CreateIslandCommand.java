@@ -132,14 +132,6 @@ implements CommandExecutor {
     }
 
     public boolean createIsland(Player player) {
-
-//    	boolean world = mv.addWorld("skyblock/"+player.getName(), Environment.NORMAL, null, "CleanroomGenerator:.");
-    	
-    	
-//    	Bukkit.getServer().dispatchCommand(Bukkit.getServer().getCommandAliases(), "mv create skyblock/"+player.getName()+" normal -g CleanroomGenerator:.");
-//    	Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "mv create skyblock/"+player.getName()+" normal -g CleanroomGenerator:.");
-    	
-//    	World world = Bukkit.createWorld("test", Environment.NORMAL, CleanroomGenerator);
     	
         Island last = this.plugin.getLastIsland();
         try {
@@ -165,7 +157,6 @@ implements CommandExecutor {
 
     public World createIslandWorld() {
 
-//    	World world = Bukkit.getServer().createWorld(null, Environment.NORMAL, null)
     	ChunkGenerator generator = new CleanroomChunkGenerator(".");
     	World world = Bukkit.getServer().createWorld(plugin.getDataFolder()+ "/map", Environment.NORMAL, generator);
     	
@@ -267,8 +258,6 @@ implements CommandExecutor {
     public final void createIslandUsingSchematic(final int x,final int z, final Player player) {
     	
     	final File file = new File(System.getProperty("user.dir"),"/schematics/island2.schematic");
-    	File dir = new File(plugin.getDataFolder(), "map");
-    	dir.mkdirs();
     	final World mvWorld = createIslandWorld();
 
         final int y = this.plugin.getISLANDS_Y();

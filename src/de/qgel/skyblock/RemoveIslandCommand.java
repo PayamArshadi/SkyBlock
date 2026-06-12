@@ -79,12 +79,14 @@ implements CommandExecutor {
                 }
 
                 
-                
+
+                final File invFolder = new File(System.getProperty("user.dir"),"plugins/MultiInv/Worlds/skyblock/"+playerName);
                 final File worldFolder = new File(System.getProperty("user.dir"),"skyblock/"+playerName);
                 Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
                 	public void run() {
                 		System.gc();
                         deleteFolder(worldFolder);
+                        deleteFolder(invFolder);
                 	}
                 },30L);
                 
