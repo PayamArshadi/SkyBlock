@@ -61,6 +61,7 @@ public class skyblock extends JavaPlugin {
         this.getCommand("is").setExecutor(new islandCommand(this));
         this.getCommand("removeIsland").setExecutor(new RemoveIslandCommand(this));
         this.getCommand("island").setExecutor(new islandCommand(this));
+        this.getCommand("clearMapCache").setExecutor(new ClearCache(this));
         this.getCommand("skyHelp").setExecutor(new skyHelpCommand());
 //        this.getCommand("skydev").setExecutor(new skyDevCommand(this));
         PluginDescriptionFile pdfFile = this.getDescription();

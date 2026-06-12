@@ -168,10 +168,8 @@ implements CommandExecutor {
     }
     
     public void copyIslandWorld(final int x, final int z, final Player player,final boolean firstRun) {
-    	
-    	if (!firstRun) {
-    		unloadTempWorld(player);
-    	}
+
+    	unloadTempWorld();
 
 		File sourceFolder = new File(plugin.getDataFolder(), "map");
         File targetFolder = new File(System.getProperty("user.dir")+"/skyblock/"+player.getName());
@@ -215,7 +213,7 @@ implements CommandExecutor {
 		}
     }
     
-    public void unloadTempWorld(Player playerName) {
+    public void unloadTempWorld() {
 	
     	MultiverseCore mv = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");	
 
@@ -242,9 +240,9 @@ implements CommandExecutor {
         mv.removeWorldFromConfig(maploc);
         mv.removeWorldFromList(maploc);
         
-        for (org.bukkit.Chunk chunk : world.getLoadedChunks()) {
-        	chunk.unload(false, false);
-        }
+//        for (org.bukkit.Chunk chunk : world.getLoadedChunks()) {
+//        	chunk.unload(false, false);
+//        }
         
         Bukkit.getServer().unloadWorld(Bukkit.getServer().getWorld(maploc), false);
         
@@ -256,7 +254,7 @@ implements CommandExecutor {
     
     public final void createIslandUsingSchematic(final int x,final int z, final Player player) {
     	
-    	final File file = new File(System.getProperty("user.dir"),"/schematics/island2.schematic");
+    	final File file = new File(plugin.getDataFolder(),"/schematics/island.schematic");
     	final World mvWorld = createIslandWorld();
 
         final int y = this.plugin.getISLANDS_Y();

@@ -28,6 +28,7 @@ implements CommandExecutor {
             sender.sendMessage("/skyhelp challenges: To see the challenges.");
             if (sender.isOp()) {
                 sender.sendMessage("/removeIsland <playername> : remove the Island of a given player");
+                sender.sendMessage("/clearMapCache : remove the Cached Island used for fast map generation");
             }
             sender.sendMessage("/skyhelp : Print this help message");
         } else if (String.join(" ", split) == "c" | String.join(" ", split) == "challenges") {

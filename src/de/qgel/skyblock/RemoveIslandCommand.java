@@ -46,7 +46,7 @@ implements CommandExecutor {
 
             	MultiverseCore mv = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");	
 
-            	MVWorld mvWorld = mv.getWorldManager().getMVWorld("skyblock/"+playerName);
+//            	MVWorld mvWorld = mv.getWorldManager().getMVWorld("skyblock/"+playerName);
             	
                 Bukkit.getServer().getWorld("world").loadChunk(-13, 44);
                 World world = Bukkit.getServer().getWorld("skyblock/"+playerName);
@@ -99,8 +99,7 @@ implements CommandExecutor {
     }
     public void deleteFolder(File file) {
     	if(file.isDirectory()) {
-    		File[] files = file.listFiles()
-;
+    		File[] files = file.listFiles();
     		if (files != null){
     			for (File child : files) {
     				deleteFolder(child);
