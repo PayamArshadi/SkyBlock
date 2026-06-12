@@ -2,15 +2,6 @@ package de.qgel.skyblock;
 
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.onarandombox.MultiverseCore.MVWorld;
-import com.onarandombox.utils.WorldManager;
-
-import org.bukkit.plugin.java.JavaPlugin;
-
-import de.qgel.skyblock.Island;
-import de.qgel.skyblock.skyblock;
-import javafx.beans.value.WeakChangeListener;
-
-import com.onarandombox.MultiverseCore.MVPlugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -23,10 +14,7 @@ import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.data.DataException;
 
-import net.minecraft.server.Chunk;
-import net.minecraft.server.MinecraftServer;
 import net.neo_vortex.bukkit.CleanroomGenerator.CleanroomChunkGenerator;
-import net.neo_vortex.bukkit.CleanroomGenerator.CleanroomGenerator;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,32 +22,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
-import java.nio.file.FileVisitOption;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.EnumSet;
-import java.util.Set;
-import java.io.IOException;
 
-import org.bukkit.Bukkit;
-import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.CraftWorld;
-import org.bukkit.craftbukkit.generator.NormalChunkGenerator;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
@@ -143,7 +113,7 @@ implements CommandExecutor {
     public World createIslandWorld() {
 
     	ChunkGenerator generator = new CleanroomChunkGenerator(".");
-    	World world = Bukkit.getServer().createWorld(plugin.getDataFolder()+ "/map", Environment.NORMAL, generator);
+    	Bukkit.getServer().createWorld(plugin.getDataFolder()+ "/map", Environment.NORMAL, generator);
     	
     	mv.getWorldManager().addWorld(plugin.getDataFolder()+ "/map", Environment.NORMAL, null , "CleanroomGenerator:.");
 
@@ -158,7 +128,7 @@ implements CommandExecutor {
     	unloadTempWorld();
 
 		File sourceFolder = new File(plugin.getDataFolder(), "map");
-        File targetFolder = new File(System.getProperty("user.dir")+"/skyblock/"+player.getName());
+//        File targetFolder = new File(System.getProperty("user.dir")+"/skyblock/"+player.getName());
 	
 		if (hasAnyFiles(sourceFolder)) {
 
@@ -170,7 +140,7 @@ implements CommandExecutor {
 
 	            	MultiverseCore mv = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");	
 
-	            	MVWorld mvWorld = mv.getWorldManager().getMVWorld(plugin.getDataFolder()+ "/map");
+//	            	MVWorld mvWorld = mv.getWorldManager().getMVWorld(plugin.getDataFolder()+ "/map");
 	            	
 	            	
 	    	    	File targetFolder1 = new File(System.getProperty("user.dir")+"/skyblock/"+player.getName());

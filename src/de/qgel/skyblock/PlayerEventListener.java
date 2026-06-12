@@ -6,9 +6,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
-import de.qgel.skyblock.Island;
-import de.qgel.skyblock.skyblock;
-
 public class PlayerEventListener
 extends PlayerListener {
     private final skyblock plugin;

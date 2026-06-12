@@ -8,7 +8,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import de.qgel.skyblock.skyblock;
 
 public class ClearCache
 implements CommandExecutor {

@@ -1,7 +1,5 @@
 package de.qgel.skyblock;
 
-import net.minecraft.server.Chunk;
-
 import java.io.File;
 
 import org.bukkit.Bukkit;
@@ -11,12 +9,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.omg.CORBA.PUBLIC_MEMBER;
-
-import com.onarandombox.MultiverseCore.MVWorld;
 import com.onarandombox.MultiverseCore.MultiverseCore;
-
-import de.qgel.skyblock.skyblock;
 
 public class RemoveIslandCommand
 implements CommandExecutor {

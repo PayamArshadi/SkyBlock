@@ -2,7 +2,7 @@ name: skyblock
 main: de.qgel.skyblock.skyblock
 version: 0.2.3
 description: skyblock plugin. Survive on a small island in the sky with only basic supplies. Try to beat the challenges. to see the challenges type /skyhelp challenges or /skyhelp c
-softdepend: [CleanroomGenerator,Multiverse-Core]
+depend: [CleanroomGenerator,Multiverse-Core]
 authors: [Qgel, Payam]
 commands:
     removeIsland:
